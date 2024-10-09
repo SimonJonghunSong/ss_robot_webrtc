@@ -1,15 +1,19 @@
 # Installation
 
-1.
+1
 
-````bash
+```bash
 git clone /path/to/module
+```
 
-2.
+2
+
 ```bash
 cd module
+```
 
-3.
+3
+
 ```javascript
 npm install converting-webRTC
-````
+```
