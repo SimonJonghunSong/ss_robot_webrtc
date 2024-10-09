@@ -1,0 +1,3 @@
+class StreamingConverter {
+	constructor() {}
+}
