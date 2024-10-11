@@ -1,0 +1,406 @@
+openapi: 3.0.3
+info:
+  title: RTSP to WebRTC API
+  version: 1.0.0
+  description: |
+    RTSP 스트리밍을 WebRTC로 변환하고 저장하는 API 서버입니다.
+    - RTSP 스트리밍 시작/종료
+    - RTSP 해상도 변경
+    - WebRTC 변환 시작/종료
+    - 비디오 저장 시작/종료
+    - 웹 UI 스트리밍 시작/종료
+    - RMS 관련 API
+
+servers:
+  - url: ""
+    description: Sever URL
+
+tags:
+  - name: RTSP
+    description: RTSP 스트리밍 관리
+  - name: WebRTC
+    description: WebRTC 변환 및 송수신
+  - name: Archive
+    description: 비디오 저장 관리
+  - name: Streaming
+    description: 웹 UI 스트리밍 관리
+  - name: RMS
+    description: Robot Management Server 관련 API
+
+paths:
+  /rtsp/init:
+    post:
+      tags:
+        - RTSP
+      summary: RTSP 스트리밍 시작
+      description: 장치로부터 RTSP 스트리밍을 시작합니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InitRtspRequest"
+      responses:
+        "200":
+          description: 스트리밍이 성공적으로 시작됨
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          description: 잘못된 요청
+  /rtsp/change:
+    put:
+      tags:
+        - RTSP
+      summary: RTSP 스트리밍 해상도 변경
+      description: 기존 RTSP 스트리밍의 해상도를 변경합니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeRtspRequest"
+      responses:
+        "200":
+          description: 스트리밍 해상도가 성공적으로 변경됨
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          description: 잘못된 요청
+  /rtsp/shutdown:
+    delete:
+      tags:
+        - RTSP
+      summary: RTSP 스트리밍 종료
+      description: 장치로부터 RTSP 스트리밍을 종료합니다.
+      parameters:
+        - in: query
+          name: resolution
+          schema:
+            type: string
+          required: true
+          description: "스트리밍 해상도 (예: 480p, 4K)"
+      responses:
+        "200":
+          description: 스트리밍이 성공적으로 종료됨
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          description: 잘못된 요청
+
+  /rtsp/play:
+    post:
+      tags:
+        - RTSP
+      summary: RTSP 스트리밍 수신 시작
+      description: RTSP 스트리밍을 수신하고 정보를 삽입합니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlayRtspRequest"
+      responses:
+        "200":
+          description: 스트리밍 수신이 성공적으로 시작됨
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          description: 잘못된 요청
+  /rtsp/stop:
+    delete:
+      tags:
+        - RTSP
+      summary: RTSP 스트리밍 수신 종료
+      description: RTSP 스트리밍 수신을 종료합니다.
+      parameters:
+        - in: query
+          name: recv_info
+          schema:
+            $ref: "#/components/schemas/ReceiveInfo"
+          required: true
+          description: 스트리밍 수신 정보
+      responses:
+        "200":
+          description: 스트리밍 수신이 성공적으로 종료됨
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          description: 잘못된 요청
+
+  /webrtc/translate/start:
+    post:
+      tags:
+        - WebRTC
+      summary: RTSP를 WebRTC로 변환 시작
+      description: RTSP 스트리밍을 WebRTC로 변환을 시작합니다.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartWebrtcTranslateRequest"
+      responses:
+        "200":
+          description: WebRTC 변환이 성공적으로 시작됨
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          description: 잘못된 요청
+  /webrtc/translate/stop:
+    post:
+      tags:
+        - WebRTC
+      summary: WebRTC 변환 종료
+      description: WebRTC 변환을 종료합니다.
+      responses:
+        "200":
+          description: WebRTC 변환이 성공적으로 종료됨
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          description: 잘못된 요청
+
+  /archive/video/start:
+    post:
+      tags:
+        - Archive
+      summary: 4K 비디오 저장 시작
+      description: 4K 비디오를 저장하기 시작합니다. 옵션으로 20초 또는 100MB 단위로 저장할 수 있습니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartSaveArchiveVideoRequest"
+      responses:
+        "200":
+          description: 비디오 저장이 성공적으로 시작됨
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          description: 잘못된 요청
+  /archive/video/stop:
+    post:
+      tags:
+        - Archive
+      summary: 4K 비디오 저장 종료
+      description: 4K 비디오 저장을 종료합니다.
+      responses:
+        "200":
+          description: 비디오 저장이 성공적으로 종료됨
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          description: 잘못된 요청
+
+  /streaming/receive/start:
+    post:
+      tags:
+        - Streaming
+      summary: 웹 UI에서 WebRTC 화면 출력 시작
+      description: 서버2의 웹 UI에서 WebRTC 화면 출력을 시작합니다.
+      responses:
+        "200":
+          description: 스트리밍 수신이 성공적으로 시작됨
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          description: 잘못된 요청
+  /streaming/receive/stop:
+    post:
+      tags:
+        - Streaming
+      summary: 웹 UI에서 WebRTC 화면 출력 종료
+      description: 서버2의 웹 UI에서 WebRTC 화면 출력을 종료합니다.
+      responses:
+        "200":
+          description: 스트리밍 수신이 성공적으로 종료됨
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          description: 잘못된 요청
+
+  /rms/webrtc/start:
+    post:
+      tags:
+        - RMS
+      summary: 서버3에서 WebRTC 수신 시작
+      description: 서버2의 WebRTC 비디오를 서버3에서 수신 가능하도록 설정합니다.
+      responses:
+        "200":
+          description: WebRTC 수신이 성공적으로 시작됨
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          description: 잘못된 요청
+  /rms/webrtc/stop:
+    post:
+      tags:
+        - RMS
+      summary: 서버3에서 WebRTC 수신 종료
+      description: 서버2에서 WebRTC 비디오 전송을 종료하도록 합니다.
+      responses:
+        "200":
+          description: WebRTC 수신이 성공적으로 종료됨
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          description: 잘못된 요청
+
+  /rms/streaming/start:
+    post:
+      tags:
+        - RMS
+      summary: 원격 PC 웹 UI에서 스트리밍 시작
+      description: 원격 PC의 웹 UI에서 비디오 스트리밍을 시작합니다.
+      responses:
+        "200":
+          description: 스트리밍이 성공적으로 시작됨
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          description: 잘못된 요청
+  /rms/streaming/stop:
+    post:
+      tags:
+        - RMS
+      summary: 원격 PC 웹 UI에서 스트리밍 종료
+      description: 원격 PC의 웹 UI에서 비디오 스트리밍을 종료합니다.
+      responses:
+        "200":
+          description: 스트리밍이 성공적으로 종료됨
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          description: 잘못된 요청
+
+components:
+  schemas:
+    InitRtspRequest:
+      type: object
+      properties:
+        resolution:
+          type: string
+          enum: [480p, 4K]
+          example: 480p
+      required:
+        - resolution
+    ChangeRtspRequest:
+      type: object
+      properties:
+        resolution:
+          type: string
+          enum: [480p, 4K]
+          example: 4K
+      required:
+        - resolution
+    PlayRtspRequest:
+      type: object
+      properties:
+        recv_info:
+          $ref: "#/components/schemas/ReceiveInfo"
+        other_parameters:
+          type: object
+          description: 추가적인 수신 정보
+      required:
+        - recv_info
+    StartWebrtcTranslateRequest:
+      type: object
+      properties:
+        source_resolution:
+          type: string
+          enum: [480p, 4K]
+          example: 4K
+        target_resolution:
+          type: string
+          enum: [480p]
+          example: 480p
+      required:
+        - source_resolution
+        - target_resolution
+    StartSaveArchiveVideoRequest:
+      type: object
+      properties:
+        storage_option:
+          type: string
+          enum: [duration, size]
+          description: 저장 옵션 유형
+          example: duration
+        duration_seconds:
+          type: integer
+          description: 저장 기간 (초)
+          example: 20
+        size_mb:
+          type: integer
+          description: 저장 파일 크기 (MB)
+          example: 100
+      required:
+        - storage_option
+    ReceiveInfo:
+      type: object
+      properties:
+        stream_id:
+          type: string
+          example: "stream123"
+        additional_info:
+          type: string
+          example: "Some info"
+      required:
+        - stream_id
+    GenericResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Operation completed successfully."
+        data:
+          type: object
+          description: 추가 데이터
+      required:
+        - success
+        - message
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Error message."
+      required:
+        - success
+        - message
