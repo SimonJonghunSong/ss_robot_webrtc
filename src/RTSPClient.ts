@@ -1,12 +1,37 @@
+// src/RTSPClient.ts
 import Stream from "node-rtsp-stream-es6";
 
-class RTSPClient {
-	private client: Stream;
+export interface RTSPClientOptions {
+	url: string;
+	ffmpegOptions?: any;
+	wsPort: number;
+}
 
-	constructor() {
-		this.client = new Stream({
-			name: "name",
-			streamUrl: "url",
+export class RTSPClient {
+	private stream: Stream;
+	private options: RTSPClientOptions;
+
+	constructor(options: RTSPClientOptions) {
+		this.options = options;
+		this.stream = new Stream({
+			name: "camera-stream",
+			streamUrl: this.options.url,
+			wsPort: this.options.wsPort,
+			ffmpegOptions: this.options.ffmpegOptions || {
+				"-stats": "",
+				"-r": 30,
+				"-s": "640x480",
+			},
 		});
+	}
+
+	public start() {
+		console.log(`RTSP Client started for URL: ${this.options.url}`);
+		this.stream.start();
+	}
+
+	public stop() {
+		console.log(`RTSP Client stopped for URL: ${this.options.url}`);
+		this.stream.stop();
 	}
 }
