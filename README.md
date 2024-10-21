@@ -9,11 +9,23 @@ git clone /path/to/module
 2
 
 ```bash
-cd module
+cd module/converting-webRTC
 ```
 
 3
 
 ```javascript
-npm install converting-webRTC
+npm link
+```
+
+4
+
+```bash
+cd ..
+```
+
+5
+
+```javascript
+npm link converting-webRTC
 ```
