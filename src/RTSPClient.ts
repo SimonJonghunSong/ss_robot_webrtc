@@ -4,7 +4,7 @@ import Stream from "node-rtsp-stream-es6";
 export interface RTSPClientOptions {
 	url: string;
 	ffmpegOptions?: any;
-	wsPort: number;
+	port: number;
 }
 
 export class RTSPClient {
@@ -16,7 +16,7 @@ export class RTSPClient {
 		this.stream = new Stream({
 			name: "camera-stream",
 			streamUrl: this.options.url,
-			wsPort: this.options.wsPort,
+			port: this.options.port,
 			ffmpegOptions: this.options.ffmpegOptions || {
 				"-stats": "",
 				"-r": 30,

@@ -12,7 +12,7 @@ class RTSPClient {
         this.stream = new node_rtsp_stream_es6_1.default({
             name: "camera-stream",
             streamUrl: this.options.url,
-            wsPort: this.options.wsPort,
+            port: this.options.port,
             ffmpegOptions: this.options.ffmpegOptions || {
                 "-stats": "",
                 "-r": 30,

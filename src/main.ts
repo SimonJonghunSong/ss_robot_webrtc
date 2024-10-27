@@ -1,11 +1,15 @@
-import { RTSPClient } from "./RTSPClient";
-async function main() {
-	const client = new RTSPClient({
-		url: "rstp",
-		wsPort: 9999,
-	});
+/**
+ * 아래 코드는 서버2에서 실행되는 예제 코드입니다.
+ * 카메라 영상 주소를 전달받아 아래 코드를 실행하면 RTSP 서버가 실행됩니다.
+ */
+import { RTSPClient, RTSPClientOptions } from "./RTSPClient";
 
-	client.start();
-}
+const options: RTSPClientOptions = {
+	url: "rtsp://210.99.70.120:1935/live/cctv061.stream",
+	port: 9999,
+};
 
-main();
+const client = new RTSPClient(options);
+
+// Start the RTSP server
+client.start();
