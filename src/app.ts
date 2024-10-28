@@ -1,5 +1,3 @@
-// app.ts
-
 /**
  * 사용 예시
  * express 서버를 사용하는 경우 아래와 같이 webRTC Scoket을 생성하고 연결을 진행합니다.

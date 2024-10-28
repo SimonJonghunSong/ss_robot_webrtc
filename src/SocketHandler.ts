@@ -9,8 +9,26 @@ class SocketHandler {
 
 		this.io.on("connection", (socket) => {
 			console.log("Client connected");
-			socket.on("disconnect", () => {
-				console.log("Client disconnected");
+
+			socket.on("offer", (offer, camera) => {
+				socket.to(camera).emit("offer", offer);
+			});
+
+			socket.on("join_stream", (camera) => {
+				socket.join(camera);
+
+				socket.emit("stream", {
+					id: camera,
+					wsUrl: `ws://localhost:3000`, // 웹 서버 상 소켓 스트리밍 주소
+				});
+			});
+
+			socket.on("answer", (answer, camera) => {
+				socket.to(camera).emit("answer", answer);
+			});
+
+			socket.on("ice-candidate", (candidate, camera) => {
+				socket.to(camera).emit("candidate", candidate);
 			});
 		});
 

@@ -5,7 +5,7 @@
 import { RTSPClient, RTSPClientOptions } from "./RTSPClient";
 
 const options: RTSPClientOptions = {
-	url: "rtsp://210.99.70.120:1935/live/cctv061.stream",
+	url: "rtsp://210.99.70.120:1935/live/cctv061.stream", // 카메라 영상 주소
 	port: 9999,
 };
 
