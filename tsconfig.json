@@ -102,6 +102,12 @@
       "./node_modules/@types",
       "./types"
     ], /* Specify multiple folders that act like './node_modules/@types'. */
-    "outDir": "./dist"
-  }
+    "outDir": "./dist",
+    "allowSyntheticDefaultImports": true, // 이 옵션을 true로 설정
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "client"
+  ],
 }

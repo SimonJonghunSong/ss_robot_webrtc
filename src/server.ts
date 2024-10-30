@@ -1,0 +1,82 @@
+// simple-ws-server.ts
+
+import { spawn } from "child_process";
+import { WebSocketServer } from "ws";
+
+const WS_PORT = 3001;
+const RTSP_URL = "rtsp://210.99.70.120:1935/live/cctv005.stream";
+
+const wss = new WebSocketServer({ port: WS_PORT });
+
+wss.on("connection", (ws) => {
+	console.log("클라이언트가 연결되었습니다.");
+
+	const ffmpeg = spawn("ffmpeg", [
+		"-rtsp_transport",
+		"tcp",
+		"-nostdin",
+		"-fflags",
+		"+genpts+flush_packets", // PTS 생성 및 패킷 플러시
+		"-avoid_negative_ts",
+		"make_zero", // Negative timestamps 설정
+		"-vsync",
+		"0", // 비디오 동기화 비활성화
+		"-start_at_zero", // 스트림을 0에서 시작
+		"-i",
+		RTSP_URL,
+		"-c:v",
+		"libx264", // 비디오를 H.264로 인코딩
+		"-pix_fmt",
+		"yuv420p", // 픽셀 포맷 설정
+		"-color_range",
+		"2", // 색상 범위 설정 (1: limited, 2: full)
+		"-preset",
+		"veryfast", // 인코딩 속도 최적화
+		"-tune",
+		"zerolatency", // 지연 시간 최소화
+		"-an", // 오디오 비활성화
+		"-f",
+		"mp4", // 출력 포맷 설정
+		"-movflags",
+		"frag_keyframe+empty_moov+default_base_moof", // Fragmented MP4 설정
+		"-fflags",
+		"nobuffer", // 버퍼링 최소화
+		"-flags",
+		"low_delay", // 지연 시간 최소화
+		"-strict",
+		"experimental", // 실험적 기능 사용 (필요 시)
+		"-muxdelay",
+		"0", // 멀티플렉싱 지연 시간 설정
+		"-muxpreload",
+		"0", // 멀티플렉싱 사전 로딩 시간 설정
+		"-max_interleave_delta",
+		"0", // 최대 인터리빙 델타 설정
+		"-bsf:v",
+		"h264_mp4toannexb", // H.264 스트림 필터 추가
+		"-max_muxing_queue_size",
+		"1024", // 멀티플렉싱 큐 크기 증가
+		"pipe:1",
+	]);
+
+	ffmpeg.stdout.on("data", (chunk: Buffer) => {
+		if (ws.readyState === ws.OPEN) {
+			ws.send(chunk);
+		}
+	});
+
+	ffmpeg.stderr.on("data", (data: Buffer) => {
+		console.error(`FFmpeg stderr: ${data}`);
+	});
+
+	ffmpeg.on("close", (code: number) => {
+		console.log(`FFmpeg exited with code ${code}`);
+		ws.close();
+	});
+
+	ws.on("close", () => {
+		console.log("클라이언트가 연결을 끊었습니다.");
+		ffmpeg.kill("SIGINT");
+	});
+});
+
+console.log(`WebSocket 서버가 ws://localhost:${WS_PORT} 에서 실행 중입니다.`);
