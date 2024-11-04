@@ -4,7 +4,8 @@ import { spawn } from "child_process";
 import { WebSocketServer } from "ws";
 
 const WS_PORT = 3001;
-const RTSP_URL = "rtsp://210.99.70.120:1935/live/cctv005.stream";
+const RTSP_URL =
+	"rtsp://root:stsunlab2024%24@122.203.5.76/axis-media/media.amp?streamprofile=4";
 
 const wss = new WebSocketServer({ port: WS_PORT });
 
@@ -19,13 +20,21 @@ wss.on("connection", (ws) => {
 		"+genpts+flush_packets", // PTS 생성 및 패킷 플러시
 		"-avoid_negative_ts",
 		"make_zero", // Negative timestamps 설정
-		"-vsync",
-		"0", // 비디오 동기화 비활성화
 		"-start_at_zero", // 스트림을 0에서 시작
 		"-i",
 		RTSP_URL,
+		"-fps_mode",
+		"passthrough", // 비디오 동기화 비활성화
 		"-c:v",
 		"libx264", // 비디오를 H.264로 인코딩
+		"-vf",
+		"scale=3850:2160", // 480p 해상도
+		"-b:v",
+		"1000k", // 비트레이트 1Mbps로 감소
+		"-maxrate",
+		"1500k", // 최대 비트레이트 1.5Mbps
+		"-bufsize",
+		"2000k", // 버퍼 크기 2Mbps
 		"-pix_fmt",
 		"yuv420p", // 픽셀 포맷 설정
 		"-color_range",
