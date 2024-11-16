@@ -36,12 +36,17 @@
   <h1>RTSP converting to WebSocket</h1>
   <div id="video-container">
     <video id="video" controls autoplay></video>
+    <button id="startRecordBtn" onclick="startRecording()">녹화 시작</button>
+    <button id="stopRecordBtn" onclick="stopRecording()" disabled>녹화 종료</button>
   </div>
   <div id="status">연결 상태: 연결 중...</div>
 
   <script>
     const video = document.getElementById('video');
     const statusEl = document.getElementById('status');
+    const startBtn = document.getElementById('startRecordBtn');
+    const stopBtn = document.getElementById('stopRecordBtn');
+    let ws;
 
     if (!('MediaSource' in window)) {
       alert('MediaSource API가 지원되지 않는 브라우저입니다.');
@@ -54,51 +59,40 @@
       console.log('MediaSource 열림');
       statusEl.textContent = '연결 상태: MediaSource 열림';
 
-      const mime = 'video/mp4; codecs="avc1.64001E"'; // H.264 High 프로필 Level 3.0
+      const mime = 'video/mp4; codecs="avc1.64001E"';
       if (MediaSource.isTypeSupported(mime)) {
         const sourceBuffer = mediaSource.addSourceBuffer(mime);
-        sourceBuffer.mode = 'segments'; // 'segments' 모드로 설정
+        sourceBuffer.mode = 'segments';
 
-        const ws = new WebSocket('ws://localhost:3001'); // WebSocket 서버 주소
-        ws.binaryType = 'arraybuffer'; // 바이너리 데이터 형식 설정
+        ws = new WebSocket('ws://localhost:3001');
+        ws.binaryType = 'arraybuffer';
+
+        const queue = [];
+        let isAppending = false;
 
         ws.onopen = () => {
           console.log('WebSocket에 연결됨');
           statusEl.textContent = '연결 상태: 연결됨';
+          startBtn.disabled = false;
         };
 
-        // 버퍼 큐
-        const queue = [];
-        let isAppending = false;
-
         ws.onmessage = (event) => {
-          console.log('Received data:', event.data);
-          console.log('typeof data:', typeof event.data);
-          console.log('data.constructor:', event.data.constructor ? event.data.constructor.name : 'unknown');
-
-          if (event.data instanceof ArrayBuffer) {
-            console.log(`수신된 데이터 크기: ${event.data.byteLength} 바이트`);
+          if (typeof event.data === 'string') {
+            try {
+              const response = JSON.parse(event.data);
+              if (response.type === 'recordingStarted') {
+                console.log('녹화가 시작되었습니다.');
+              } else if (response.type === 'recordingStopped') {
+                console.log('녹화가 종료되었습니다.');
+              }
+            } catch (e) {
+              console.error('JSON 파싱 에러:', e);
+            }
+          } else if (event.data instanceof ArrayBuffer) {
             const chunk = new Uint8Array(event.data);
             queue.push(chunk);
             appendNext();
-          } else if (event.data instanceof Uint8Array) {
-            console.log(`수신된 데이터 크기: ${event.data.byteLength} 바이트`);
-            queue.push(event.data);
-            appendNext();
-          } else {
-            console.error("받은 데이터 형식이 유효하지 않습니다.");
           }
-        };
-
-        ws.onclose = () => {
-          console.log('WebSocket 연결 종료');
-          statusEl.textContent = '연결 상태: 연결 종료';
-          mediaSource.endOfStream();
-        };
-
-        ws.onerror = (error) => {
-          console.error('WebSocket 오류:', error);
-          statusEl.textContent = '연결 상태: 오류 발생';
         };
 
         function appendNext() {
@@ -120,16 +114,36 @@
           appendNext();
         });
 
-        sourceBuffer.addEventListener('error', (e) => {
-          console.error('SourceBuffer 오류:', e);
-          statusEl.textContent = '오류: SourceBuffer 문제 발생';
-        });
+        ws.onclose = () => {
+          console.log('WebSocket 연결 종료');
+          statusEl.textContent = '연결 상태: 연결 종료';
+          mediaSource.endOfStream();
+          startBtn.disabled = true;
+          stopBtn.disabled = true;
+        };
 
-      } else {
-        console.error(`지원되지 않는 MIME 타입: ${mime}`);
-        statusEl.textContent = '오류: 지원되지 않는 MIME 타입';
+        ws.onerror = (error) => {
+          console.error('WebSocket 오류:', error);
+          statusEl.textContent = '연결 상태: 오류 발생';
+        };
       }
     });
+
+    function startRecording() {
+      ws.send(JSON.stringify({ type: "startRecording" }));
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      startBtn.classList.add('recording');
+      statusEl.textContent = '연결 상태: 녹화 중...';
+    }
+
+    function stopRecording() {
+      ws.send(JSON.stringify({ type: "stopRecording" }));
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      startBtn.classList.remove('recording');
+      statusEl.textContent = '연결 상태: 연결됨';
+    }
 
     mediaSource.addEventListener('error', (e) => {
       console.error('MediaSource 오류:', e);
