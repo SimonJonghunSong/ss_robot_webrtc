@@ -25,8 +25,6 @@ wss.on("connection", (ws) => {
 		"-avoid_negative_ts",
 		"make_zero", // Negative timestamps 설정
 		"-start_at_zero", // 스트림을 0에서 시작
-		"-probesize",
-		"32", // 프로브 크기 설정
 		"-analyzeduration",
 		"0", // 분석 기간 설정
 		"-i",

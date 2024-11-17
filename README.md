@@ -38,6 +38,9 @@ npx ts-node src/server.ts
 public/index.html 파일을 브라우저에서 열어주세요.
 67 line 부분에서 웹소켓 서버의 주소를 변경해주세요(샘플코드 - 3001번 포트 사용).
 
+리액트를 사용하는 경우 public/index.html 파일을 리액트 소스 코드 내 public/index.html 파일로 복사해주세요.
+복사한 다음 리액트 서버를 실행하여 <http://서버주소/index.html> 페이지를 열어주세요.
+
 ```javascript
 ws = new WebSocket("ws://localhost:3001");
 ```
