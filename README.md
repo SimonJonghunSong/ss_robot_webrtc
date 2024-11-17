@@ -41,3 +41,45 @@ public/index.html 파일을 브라우저에서 열어주세요.
 ```javascript
 ws = new WebSocket("ws://localhost:3001");
 ```
+
+5
+
+서버 연동 가이드
+
+## WebSocket 이벤트 핸들링
+
+- WebSocket 객체는 onopen, onmessage, onclose, onerror 이벤트를 지원합니다.
+
+### 녹화 시작 요청
+
+```javascript
+ws.send(
+	JSON.stringify({
+		type: "startRecording",
+	}),
+);
+```
+
+### 녹화 종료 요청
+
+```javascript
+ws.send(
+	JSON.stringify({
+		type: "stopRecording",
+	}),
+);
+```
+
+### 스트리밍 처리
+
+```javascript
+ws.binaryType = "arraybuffer"; // ArrayBuffer 설정
+
+ws.onmessage = (event) => {
+	if (event.data instanceof ArrayBuffer) {
+		const chunk = new Uint8Array(event.data);
+		// MediaSource에 비디오 데이터 추가
+		sourceBuffer.appendBuffer(chunk);
+	}
+};
+```
