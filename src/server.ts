@@ -1,11 +1,11 @@
 // simple-ws-server.ts
-
 import { spawn } from "child_process";
+import { mkdirSync } from "fs";
 import path from "path";
 import { WebSocketServer } from "ws";
 
 const WS_PORT = 3001;
-const RTSP_URL = "rtsp://210.99.70.120:1935/live/cctv005.stream";
+const RTSP_URL = "rtsp://210.99.70.120:1935/live/cctv004.stream";
 // "rtsp://root:stsunlab2024%24@122.203.5.76/axis-media/media.amp?streamprofile=4";
 
 const wss = new WebSocketServer({ port: WS_PORT });
@@ -29,8 +29,6 @@ wss.on("connection", (ws) => {
 		"0", // 분석 기간 설정
 		"-i",
 		RTSP_URL,
-		"-fps_mode",
-		"passthrough", // 비디오 동기화 비활성화
 		"-c:v",
 		"libx264", // 비디오를 H.264로 인코딩
 		"-g",
@@ -94,14 +92,12 @@ wss.on("connection", (ws) => {
 
 	ws.on("message", (message: string) => {
 		const data = JSON.parse(message);
+		const recordingDir = path.join(__dirname, "recordings");
+		mkdirSync(recordingDir, { recursive: true });
 
 		if (data.type === "startRecording") {
 			const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-			const outputPath = path.join(
-				__dirname,
-				"recordings",
-				`recording-${timestamp}.mp4`,
-			);
+			const outputPath = path.join(recordingDir, `recording-${timestamp}.mp4`);
 
 			isRecording = true;
 
@@ -114,6 +110,17 @@ wss.on("connection", (ws) => {
 				"-c:v",
 				"copy",
 				"-an",
+				"-fflags",
+				"+genpts+flush_packets",
+				"-avoid_negative_ts",
+				"make_zero",
+				"-vsync",
+				"1",
+				"-f",
+				"mp4",
+				"-movflags",
+				"frag_keyframe+empty_moov+default_base_moof",
+				"-y",
 				outputPath,
 			]);
 
