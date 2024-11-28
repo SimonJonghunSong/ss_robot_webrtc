@@ -81,9 +81,9 @@ wss.on("connection", (ws) => {
 		}
 	});
 
-	ffmpeg.stderr.on("data", (chunk: Buffer) => {
-		console.error(`FFmpeg stderr: ${chunk}`);
-	});
+	// ffmpeg.stderr.on("data", (chunk: Buffer) => {
+	// 	console.error(`FFmpeg stderr: ${chunk}`);
+	// });
 
 	ffmpeg.on("close", (code: number) => {
 		console.log(`FFmpeg exited with code ${code}`);
