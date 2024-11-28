@@ -13,6 +13,8 @@ const wss = new WebSocketServer({ port: WS_PORT });
 wss.on("connection", (ws) => {
 	console.log("클라이언트가 연결되었습니다.");
 
+	ws.send(JSON.stringify({ type: "streamInitializing" }));
+
 	let recordingProcess: any = null;
 	let isRecording = false;
 
@@ -28,9 +30,11 @@ wss.on("connection", (ws) => {
 		"-analyzeduration",
 		"0", // 분석 기간 설정
 		"-probesize",
-		"100000",
+		"32",
 		"-reorder_queue_size",
 		"0",
+		"-buffer_size",
+		"16384",
 		"-i",
 		RTSP_URL,
 		"-c:v",
@@ -75,6 +79,10 @@ wss.on("connection", (ws) => {
 		if (ws.readyState === ws.OPEN && !isRecording) {
 			ws.send(chunk);
 		}
+	});
+
+	ffmpeg.stderr.on("data", (chunk: Buffer) => {
+		console.error(`FFmpeg stderr: ${chunk}`);
 	});
 
 	ffmpeg.on("close", (code: number) => {
