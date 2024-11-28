@@ -30,7 +30,7 @@ wss.on("connection", (ws) => {
 		"-analyzeduration",
 		"0", // 분석 기간 설정
 		"-probesize",
-		"32",
+		"16384",
 		"-reorder_queue_size",
 		"0",
 		"-buffer_size",
@@ -40,15 +40,15 @@ wss.on("connection", (ws) => {
 		"-c:v",
 		"libx264", // 비디오를 H.264로 인코딩
 		"-g",
-		"5", // 프레임 간격 설정
+		"1", // 프레임 간격 설정
 		"-r",
-		"21", // 프레임 속도 설정
+		"15", // 프레임 속도 설정
 		"-vf",
 		"scale=854:480", // 480p 해상도
 		"-b:v",
-		"300k", // 비트레이트 1Mbps로 감소
+		"1000k", // 비트레이트 1Mbps로 감소
 		"-maxrate",
-		"300k", // 최대 비트레이트 1.5Mbps
+		"1000k", // 최대 비트레이트 1.5Mbps
 		"-bufsize",
 		"100k", // 버퍼 크기 2Mbps
 		"-threads",
