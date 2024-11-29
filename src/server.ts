@@ -76,14 +76,14 @@ wss.on("connection", (ws) => {
 	]);
 
 	ffmpeg.stdout.on("data", (chunk: Buffer) => {
-		if (ws.readyState === ws.OPEN && !isRecording) {
+		if (ws.readyState === ws.OPEN) {
 			ws.send(chunk);
 		}
 	});
 
-	// ffmpeg.stderr.on("data", (chunk: Buffer) => {
-	// 	console.error(`FFmpeg stderr: ${chunk}`);
-	// });
+	ffmpeg.stderr.on("data", (chunk: Buffer) => {
+		console.error(`FFmpeg stderr: ${chunk}`);
+	});
 
 	ffmpeg.on("close", (code: number) => {
 		console.log(`FFmpeg exited with code ${code}`);
