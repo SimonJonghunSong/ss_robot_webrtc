@@ -40,7 +40,7 @@ wss.on("connection", (ws) => {
 		"-c:v",
 		"libx264", // 비디오를 H.264로 인코딩
 		"-g",
-		"1", // 프레임 간격 설정
+		"3", // 프레임 간격 설정
 		"-r",
 		"15", // 프레임 속도 설정
 		"-vf",
@@ -53,10 +53,6 @@ wss.on("connection", (ws) => {
 		"100k", // 버퍼 크기 2Mbps
 		"-threads",
 		"2",
-		"-pix_fmt",
-		"yuv420p", // 픽셀 포맷 설정
-		"-color_range",
-		"2", // 색상 범위 설정 (1: limited, 2: full)
 		"-preset",
 		"ultrafast", // 인코딩 속도 최적화
 		"-tune",
