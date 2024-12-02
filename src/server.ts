@@ -19,55 +19,30 @@ wss.on("connection", (ws) => {
 	let isRecording = false;
 
 	const ffmpeg = spawn("ffmpeg", [
+		"-fflags",
+		"+genpts+nobuffer",
 		"-rtsp_transport",
 		"tcp",
-		"-nostdin",
-		"-fflags",
-		"+genpts+flush_packets+nobuffer", // PTS 생성 및 패킷 플러시
-		"-avoid_negative_ts",
-		"make_zero", // Negative timestamps 설정
-		"-start_at_zero", // 스트림을 0에서 시작
-		"-analyzeduration",
-		"0", // 분석 기간 설정
-		"-probesize",
-		"16384",
-		"-reorder_queue_size",
-		"0",
-		"-buffer_size",
-		"16384",
 		"-i",
 		RTSP_URL,
+		"-vsync",
+		"0",
+		"-copyts",
 		"-c:v",
-		"libx264", // 비디오를 H.264로 인코딩
-		"-g",
-		"3", // 프레임 간격 설정
-		"-r",
-		"15", // 프레임 속도 설정
-		"-vf",
-		"scale=854:480", // 480p 해상도
-		"-b:v",
-		"1000k", // 비트레이트 1Mbps로 감소
-		"-maxrate",
-		"1000k", // 최대 비트레이트 1.5Mbps
-		"-bufsize",
-		"100k", // 버퍼 크기 2Mbps
-		"-threads",
-		"2",
-		"-preset",
-		"ultrafast", // 인코딩 속도 최적화
-		"-tune",
-		"zerolatency", // 지연 시간 최소화
-		"-an", // 오디오 비활성화
+		"copy",
+		"-an",
 		"-f",
-		"mp4", // 출력 포맷 설정
+		"mp4",
 		"-movflags",
-		"+faststart+frag_keyframe+empty_moov+default_base_moof", // Fragmented MP4 설정
-		"-fflags",
-		"nobuffer", // 버퍼링 최소화
-		"-flags",
-		"low_delay", // 지연 시간 최소화
-		"-bsf:v",
-		"h264_mp4toannexb", // H.264 스트림 필터 추가
+		"empty_moov+default_base_moof+frag_keyframe",
+		"-tune",
+		"zerolatency",
+		"-preset",
+		"ultrafast",
+		"-probesize",
+		"32",
+		"-analyzeduration",
+		"0",
 		"pipe:1",
 	]);
 
