@@ -1,21 +1,70 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 
 <head>
-  <title>Video Stream</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8">
+  <title>RTSP 스트림 뷰어 with WebSocket and MSE</title>
+  <link rel="preconnect" href="http://localhost:8889">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+
+    #video-container {
+      display: inline-block;
+      position: relative;
+    }
+
+    video {
+      width: 640px;
+      height: 480px;
+      border: 2px solid #333;
+      background-color: #000;
+    }
+
+    #status {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 
 <body>
-  <div class="container">
-    <video id="video" autoplay playsinline></video>
-
-    <div class="controls">
-      <button id="startRecord">녹화 시작</button>
-      <button id="stopRecord" disabled>녹화 중지</button>
-    </div>
+  <h1>RTSP converting to WebSocket</h1>
+  <div id="video-container">
+    <iframe src="http://localhost:8889/cam" allow="autoplay"></iframe>
+    <button id="startRecordBtn" onclick="startRecording()">녹화 시작</button>
+    <button id="stopRecordBtn" onclick="stopRecording()" disabled>녹화 종료</button>
   </div>
-  <script src="/js/client.js"></script>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const startBtn = document.getElementById('startRecordBtn');
+    const stopBtn = document.getElementById('stopRecordBtn');
+    let ws;
+
+    ws = new WebSocket('ws://localhost:3001');
+    ws.binaryType = 'arraybuffer';
+
+    function startRecording() {
+      ws.send(JSON.stringify({ type: "startRecording" }));
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      startBtn.classList.add('recording');
+    }
+
+    function stopRecording() {
+      ws.send(JSON.stringify({ type: "stopRecording" }));
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      startBtn.classList.remove('recording');
+    }
+
+  </script>
 </body>
 
 </html>

@@ -2,41 +2,64 @@
 
 ## Requirements
 
+- OS: Linux
+- Architecture: x64
 - Node.js 22.x
 - npm 10.x
 
 ## Installation
 
-1
+### 1
 
 ```bash
 git clone /path/to/module
 ```
 
-2
+### 2
 
 패키지를 설치합니다.
 
-```javascript
+```bash
 npm install
 ```
 
-3
+### 3
+
 서버를 실행합니다.
+
+#### 3-1
+
+먼저 미디어 서버를 실행합니다.
+
+```bash
+./mediamtx
+```
+
+#### 3-2
+
+웹서버/웹소켓 서버를 실행합니다.
 서버는 RTSP 스트리밍을 컨버팅하고 웹소켓 서버를 실행합니다.
 
 해당 서버는 Node.js Websocket 모듈을 사용하고 있습니다.
 
-```javascript
+카메라 주소는mediamtx.yml 파일에서 설정할 수 있습니다.
+
+```yaml
+# mediamtx.yml 701 line
+source: rtsp://127.0.0.1:8554/test
+```
+
+```bash
 npx ts-node src/server.ts
 ```
 
-4
+### 4
 
 클라이언트를 실행합니다.
 
-public/index.html 파일을 브라우저에서 열어주세요.
-67 line 부분에서 웹소켓 서버의 주소를 변경해주세요(샘플코드 - 3001번 포트 사용).
+```bash
+http://localhost:3001
+```
 
 리액트를 사용하는 경우 public/index.html 파일을 리액트 소스 코드 내 public/index.html 파일로 복사해주세요.
 이후 리액트 서버를 실행하여 <http://서버주소/index.html> 페이지를 열어주세요.
@@ -45,7 +68,7 @@ public/index.html 파일을 브라우저에서 열어주세요.
 ws = new WebSocket("ws://localhost:3001");
 ```
 
-5
+### 5
 
 서버 연동 가이드
 
@@ -71,18 +94,4 @@ ws.send(
 		type: "stopRecording",
 	}),
 );
-```
-
-### 스트리밍 처리
-
-```javascript
-ws.binaryType = "arraybuffer"; // ArrayBuffer 설정
-
-ws.onmessage = (event) => {
-	if (event.data instanceof ArrayBuffer) {
-		const chunk = new Uint8Array(event.data);
-		// MediaSource에 비디오 데이터 추가
-		sourceBuffer.appendBuffer(chunk);
-	}
-};
 ```

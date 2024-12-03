@@ -1,15 +1,21 @@
 // simple-ws-server.ts
 import { spawn } from "child_process";
+import express from "express";
 import { mkdirSync } from "fs";
+import { createServer } from "http";
 import path from "path";
 import { WebSocketServer } from "ws";
 
+const app = express();
 const WS_PORT = 3001;
 const RTSP_URL = "rtsp://210.99.70.120:1935/live/cctv004.stream";
-// "rtsp://root:stsunlab2024%24@122.203.5.76/axis-media/media.amp?streamprofile=4";
 
-const wss = new WebSocketServer({ port: WS_PORT });
+const server = createServer(app);
+const wss = new WebSocketServer({ server });
 
+app.get("/", (req, res) => {
+	res.sendFile(path.join(__dirname, "/public/index.html"));
+});
 wss.on("connection", (ws) => {
 	console.log("클라이언트가 연결되었습니다.");
 
@@ -17,53 +23,6 @@ wss.on("connection", (ws) => {
 
 	let recordingProcess: any = null;
 	let isRecording = false;
-
-	const ffmpeg = spawn("ffmpeg", [
-		"-fflags",
-		"+genpts+nobuffer",
-		"-rtsp_transport",
-		"tcp",
-		"-i",
-		RTSP_URL,
-		"-copyts",
-		"-c:v",
-		"copy",
-		"-an",
-		"-f",
-		"mp4",
-		"-movflags",
-		"empty_moov+default_base_moof+frag_keyframe+faststart",
-		"-tune",
-		"zerolatency",
-		"-preset",
-		"ultrafast",
-		"-probesize",
-		"32",
-		"-analyzeduration",
-		"0",
-		"-reconnect_at_eof",
-		"1",
-		"-reconnect_streamed",
-		"1",
-		"-reconnect_delay_max",
-		"2",
-		"pipe:1",
-	]);
-
-	ffmpeg.stdout.on("data", (chunk: Buffer) => {
-		if (ws.readyState === ws.OPEN) {
-			ws.send(chunk);
-		}
-	});
-
-	ffmpeg.stderr.on("data", (chunk: Buffer) => {
-		console.error(`FFmpeg stderr: ${chunk}`);
-	});
-
-	ffmpeg.on("close", (code: number) => {
-		console.log(`FFmpeg exited with code ${code}`);
-		ws.close();
-	});
 
 	ws.on("message", (message: string) => {
 		const data = JSON.parse(message);
@@ -124,8 +83,9 @@ wss.on("connection", (ws) => {
 
 	ws.on("close", () => {
 		console.log("클라이언트가 연결을 끊었습니다.");
-		ffmpeg.kill("SIGINT");
 	});
 });
 
-console.log(`WebSocket 서버가 ws://localhost:${WS_PORT} 에서 실행 중입니다.`);
+server.listen(WS_PORT, () => {
+	console.log(`서버가 시작되었습니다. 포트: ${WS_PORT}`);
+});
